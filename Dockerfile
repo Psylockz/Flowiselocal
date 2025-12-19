@@ -34,10 +34,8 @@ FROM node:20-alpine
 WORKDIR /usr/src/flowise
 
 RUN apk add --no-cache \
-  libc6-compat \
-  chromium
+  libc6-compat 
 
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 ENV NODE_ENV=production
 
 RUN npm install -g pnpm
