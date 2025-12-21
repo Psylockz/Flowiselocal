@@ -24,7 +24,7 @@ COPY . .
 
 # Instalacja workspace + build
 RUN pnpm install -r --no-frozen-lockfile
-RUN pnpm turbo run build
+RUN pnpm turbo run build --concurrency=1
 
 
 # =========================
