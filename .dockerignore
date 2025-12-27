@@ -1,10 +1,33 @@
+# node / pnpm
 node_modules
+.pnpm-store
+.pnpm
+.pnpm-debug.log
+
+# turbo / monorepo
+.turbo
 dist
 build
+coverage
 
-**/node_modules
-**/build
-**/dist
+# git
+.git
+.gitignore
 
-packages/server/.env
-packages/ui/.env
+# env / secrets
+.env
+.env.*
+!.env.example
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode
+.idea
+
+# logs
+*.log
+
+# docker
+Dockerfile
+docker-compose.yml
