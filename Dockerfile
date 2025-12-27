@@ -14,48 +14,41 @@ RUN apk add --no-cache \
   build-base \
   cairo-dev \
   pango-dev \
-  git \
-  curl
+  curl \
+  git
 
-# pnpm przez corepack (mniej bałaganu niż npm -g)
-RUN corepack enable
+RUN npm install -g pnpm
 
-# Kopiuj tylko to, co potrzebne do instalacji (lepszy cache)
-COPY pnpm-lock.yaml pnpm-workspace.yaml package.json turbo.json ./
-COPY packages ./packages
+# kopiujemy całe repo
+COPY . .
 
-# install + build
-RUN pnpm install -r --frozen-lockfile
+# instalacja workspace + build
+RUN pnpm install -r --no-frozen-lockfile
+RUN pnpm turbo run build
 RUN pnpm turbo run build --concurrency=1
-
-# Zrób “deploy” tylko dla serwera (produkcyjne node_modules + zbudowane artefakty)
-# Uwaga: podmień nazwę filtra jeśli Twój package nazywa się inaczej niż "flowise"
-RUN pnpm --filter ./packages/server... deploy --prod /out
 
 
 # =========================
 # RUNTIME STAGE
 # =========================
 FROM node:20-alpine
-WORKDIR /app
+WORKDIR /usr/src/flowise
 
-ENV NODE_ENV=production
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
-ENV PUPPETEER_SKIP_DOWNLOAD=true
-
-# Chromium + minimalne runtime libs
 RUN apk add --no-cache \
+  libc6-compat \
   chromium \
   nss \
   freetype \
   harfbuzz \
   ca-certificates \
-  ttf-freefont \
-  libc6-compat \
-  python3
+  ttf-freefont
 
-# Skopiuj tylko “wydestylowany” serwer
-COPY --from=builder /out /app
+ENV NODE_ENV=production
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+
+RUN npm install -g pnpm
+
+COPY --from=builder /usr/src/flowise /usr/src/flowise
 
 EXPOSE 3000
-CMD ["node", "dist/index.js"]
+CMD ["pnpm", "start"]
