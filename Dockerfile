@@ -4,7 +4,9 @@
 FROM node:20-alpine AS builder
 WORKDIR /usr/src/flowise
 
+ENV NODE_OPTIONS=--max-old-space-size=4096
 ENV PUPPETEER_SKIP_DOWNLOAD=true
+ENV CI=true
 
 RUN apk add --no-cache \
   libc6-compat \
@@ -19,13 +21,14 @@ RUN apk add --no-cache \
 
 RUN npm install -g pnpm
 
-# kopiujemy całe repo
 COPY . .
 
-# instalacja workspace + build
 RUN pnpm install -r --no-frozen-lockfile
-RUN pnpm turbo run build
 RUN pnpm turbo run build --concurrency=1
+
+# ✅ usuń dev deps bez odpalania postinstall (husky)
+RUN rm -rf node_modules
+RUN pnpm install -r --prod --no-frozen-lockfile --ignore-scripts
 
 
 # =========================
